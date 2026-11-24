@@ -32,7 +32,7 @@ final class CoreRulesTests: XCTestCase {
         let s = try Store(directory: dir)
         let y = gregorian.component(.year, from: Date())
         let saved = try s.save([Performer(["id": "ok", "name": "Adult", "birth": "1990-01-01"]),
-                                Performer(["id": "minor", "name": "Minor", "birth": "\(y - 16)-01-01"]),
+                                Performer(["id": "minor", "name": "Minor", "birth": .string("\(y - 16)-01-01")]),
                                 Performer(["id": "bad id", "name": "Bad"])])
         XCTAssertEqual(saved.map(\.id), ["ok"])
         XCTAssertEqual(s.loadAll().map(\.id), ["ok"])

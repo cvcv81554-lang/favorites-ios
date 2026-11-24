@@ -60,16 +60,35 @@ struct Stars: View {
 }
 
 /// صورة من مرجع محلي (file:) أو رابط https — تملأ إطارها بلا تشويه.
+/// الروابط تُحمَّل تلقائيًا فقط من مضيفات المصادر الرسمية؛ غيرها (قد يأتي من ملف مستورد) لا يُطلب إلا بضغطك —
+/// حتى لا يكشف ملفٌ اتصالك لموقع مجهول.
 struct PhotoView: View {
     @Environment(AppModel.self) private var model
     let ref: String
+    @State private var allowed = false
+
+    static let trustedHosts = ["theporndb.net", "metadataapi.net", "stashdb.org", "wikimedia.org", "wikipedia.org"]
+    static func isTrusted(_ u: URL) -> Bool {
+        guard let h = u.host?.lowercased() else { return false }
+        return trustedHosts.contains { h == $0 || h.hasSuffix("." + $0) }
+    }
+
     var body: some View {
         Group {
             if ref.hasPrefix("file:"), let u = model.store.photoURL(ref), let img = UIImage(contentsOfFile: u.path) {
                 Image(uiImage: img).resizable().scaledToFill()
             } else if ref.hasPrefix("https://"), let u = URL(string: ref) {
-                AsyncImage(url: u) { phase in
-                    if let img = phase.image { img.resizable().scaledToFill() } else { placeholder }
+                if Self.isTrusted(u) || allowed {
+                    AsyncImage(url: u) { phase in
+                        if let img = phase.image { img.resizable().scaledToFill() } else { placeholder }
+                    }
+                } else {
+                    ZStack {
+                        placeholder
+                        Button { allowed = true } label: {
+                            Label("تحميل الصورة من \(u.host ?? "")", systemImage: "arrow.down.circle").font(Theme.font(11))
+                        }.buttonStyle(.bordered).padding(6)
+                    }
                 }
             } else { placeholder }
         }
