@@ -1,0 +1,10 @@
+# يُولَّد على GitHub Actions
+Favorites.xcodeproj/
+build/
+.build/
+.swiftpm/
+DerivedData/
+Payload/
+dist/
+*.ipa
+.DS_Store

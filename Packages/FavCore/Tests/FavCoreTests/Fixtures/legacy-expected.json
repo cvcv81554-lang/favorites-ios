@@ -1,0 +1,155 @@
+{
+  "password": "demo-pass-123",
+  "ids": [
+    "p-demo-a",
+    "p-demo-b",
+    "p-no-date"
+  ],
+  "minorsSkipped": 3,
+  "invalid": 2,
+  "lists": [
+    {
+      "id": "L1",
+      "name": "قائمة تجريبية"
+    }
+  ],
+  "wlists": [
+    {
+      "id": "W1",
+      "name": "أعمال مختارة"
+    }
+  ],
+  "prefs": {
+    "vkte_goal": "5"
+  },
+  "items": [
+    {
+      "id": "p-demo-a",
+      "name": "Demo Performer A",
+      "aliases": "Demo A, ديمو",
+      "country": "BR",
+      "birth": "1995-06-15",
+      "rating": 4.5,
+      "fav": true,
+      "criteria": {
+        "beauty": 5,
+        "charisma": 4.5,
+        "perf": 4,
+        "seduce": 4,
+        "body": 4.5,
+        "screen": 4,
+        "bold": 3.5,
+        "heat": 4
+      },
+      "bodyD": {
+        "face": 5,
+        "hair": 4
+      },
+      "tags": [
+        "demo",
+        "تجربة"
+      ],
+      "lists": [
+        "L1"
+      ],
+      "notes": "ملاحظة تجريبية",
+      "photos": [
+        "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+        "https://example.com/a.jpg"
+      ],
+      "thumb": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+      "accounts": [
+        {
+          "p": "instagram",
+          "v": "demo_a"
+        }
+      ],
+      "stashId": "S-DEMO-1",
+      "pdbId": "P-DEMO-1",
+      "stashIds": [
+        "S-DEMO-1",
+        "S-DEMO-2"
+      ],
+      "height": 168,
+      "cs": 2016,
+      "added": 1700000000000,
+      "updated": 1760000000000,
+      "views": 12,
+      "elo": 1088,
+      "duels": 9,
+      "dw": 6,
+      "tier": "A",
+      "zzFuture": {
+        "nested": [
+          1,
+          2,
+          3
+        ],
+        "flag": true
+      },
+      "works": [
+        {
+          "t": "Demo Scene One",
+          "s": "Demo Studio",
+          "w": 1,
+          "wd": "2024-01-02",
+          "r": 5,
+          "is": "SC-1",
+          "ip": "TP-1",
+          "tg": [
+            "a",
+            "b"
+          ],
+          "ls": [
+            "W1"
+          ],
+          "u": "https://example.com/s1",
+          "du": 32,
+          "tr": "https://example.com/t.mp4",
+          "rc": {
+            "perf": 5
+          },
+          "d": "2023-05-07",
+          "y": "2023"
+        },
+        {
+          "t": "Upcoming Demo",
+          "s": "Demo Studio",
+          "upc": 1,
+          "d": "2027-01-01",
+          "y": "2027"
+        },
+        {
+          "t": "Legacy Work",
+          "s": "Old Site",
+          "y": "2010"
+        }
+      ]
+    },
+    {
+      "id": "p-demo-b",
+      "name": "Demo Performer B",
+      "birth": "1990",
+      "rating": 3,
+      "works": [
+        {
+          "t": "Demo Scene One",
+          "s": "Demo Studio",
+          "is": "SC-1",
+          "d": "2023-05-08",
+          "y": "2023"
+        }
+      ],
+      "updated": 1750000000000,
+      "photos": [],
+      "tags": []
+    },
+    {
+      "id": "p-no-date",
+      "name": "No Date Demo",
+      "photos": [],
+      "tags": [],
+      "works": []
+    }
+  ]
+}
