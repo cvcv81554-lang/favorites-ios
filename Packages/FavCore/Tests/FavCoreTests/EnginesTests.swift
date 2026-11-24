@@ -25,10 +25,10 @@ final class EnginesTests: XCTestCase {
     }
 
     func testWorkTasteAndRecommendations() {
-        var g1 = WorkGroup(key: "a"); g1.t = "A"; g1.s = "Studio X"; g1.r = 5; g1.seen = true
-        var g2 = WorkGroup(key: "b"); g2.t = "B"; g2.s = "Studio X"; g2.r = 5; g2.seen = true
-        var g3 = WorkGroup(key: "c"); g3.t = "C"; g3.s = "Studio X"; g3.d = "2020-01-01"
-        var g4 = WorkGroup(key: "d"); g4.t = "D"; g4.s = "Other"
+        var g1 = FavCore.WorkGroup(key: "a"); g1.t = "A"; g1.s = "Studio X"; g1.r = 5; g1.seen = true
+        var g2 = FavCore.WorkGroup(key: "b"); g2.t = "B"; g2.s = "Studio X"; g2.r = 5; g2.seen = true
+        var g3 = FavCore.WorkGroup(key: "c"); g3.t = "C"; g3.s = "Studio X"; g3.d = "2020-01-01"
+        var g4 = FavCore.WorkGroup(key: "d"); g4.t = "D"; g4.s = "Other"
         let t = buildWorkTaste([g1, g2, g3, g4])
         let r = recommendWorks([g1, g2, g3, g4], t, now: now)
         XCTAssertEqual(r.map(\.g.key), ["c"]); XCTAssertTrue(r[0].why[0].contains("Studio X"))
@@ -53,8 +53,8 @@ final class EnginesTests: XCTestCase {
 
     func testReelsRankingDiversityAndSignals() {
         let ps = (0..<5).map { Performer(["id": .string("p\($0)"), "name": .string("P\($0)"), "fav": true]) }
-        var groups: [WorkGroup] = []
-        for (i, p) in ps.enumerated() { for j in 0..<4 { var g = WorkGroup(key: "w\(i)-\(j)"); g.t = "W\(i)-\(j)"; g.s = "S\(i)"; g.tr = "https://cdn.test/\(i)-\(j).mp4"; g.who = [p]; groups.append(g) } }
+        var groups: [FavCore.WorkGroup] = []
+        for (i, p) in ps.enumerated() { for j in 0..<4 { var g = FavCore.WorkGroup(key: "w\(i)-\(j)"); g.t = "W\(i)-\(j)"; g.s = "S\(i)"; g.tr = "https://cdn.test/\(i)-\(j).mp4"; g.who = [p]; groups.append(g) } }
         let f = rankReels(groups, buildWorkTaste(groups), ReelSignals(), seed: 3)
         for i in 1..<4 { XCTAssertNotEqual(f[i].g.who[0].id, f[i - 1].g.who[0].id) }
         var s = ReelSignals()
@@ -119,7 +119,7 @@ final class EnginesTests: XCTestCase {
 
     func testKnowledgeGraphAndHealth() {
         let a = Performer(["id": "a", "name": "A"]), b = Performer(["id": "b", "name": "B"])
-        var g = WorkGroup(key: "w1"); g.t = "W"; g.s = "S"; g.who = [a, b]
+        var g = FavCore.WorkGroup(key: "w1"); g.t = "W"; g.s = "S"; g.who = [a, b]
         let kg = KnowledgeGraph(lib: [a, b], works: [g], lists: [])
         XCTAssertEqual(kg.path("p:a", "p:b"), ["p:a", "w:w1", "p:b"])
         XCTAssertEqual(kg.related(performer: "a").first?.0, "b")
