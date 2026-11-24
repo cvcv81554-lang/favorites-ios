@@ -26,7 +26,7 @@ struct FavoritesApp: App {
 final class AppModel {
     let store: Store
     private(set) var performers: [Performer] = []
-    private(set) var works: [WorkGroup] = []
+    private(set) var works: [FavCore.WorkGroup] = []
     private(set) var lists: [JSONObject] = []
     private(set) var wlists: [JSONObject] = []
     var loadError: String?

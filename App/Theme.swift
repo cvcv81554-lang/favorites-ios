@@ -65,7 +65,7 @@ struct Stars: View {
 struct PhotoView: View {
     @Environment(AppModel.self) private var model
     let ref: String
-    @State private var allowed = false
+    @State private var allowedRef: String?   // الموافقة مرتبطة بالرابط نفسه فقط
 
     static let trustedHosts = ["theporndb.net", "metadataapi.net", "stashdb.org", "wikimedia.org", "wikipedia.org"]
     static func isTrusted(_ u: URL) -> Bool {
@@ -78,14 +78,14 @@ struct PhotoView: View {
             if ref.hasPrefix("file:"), let u = model.store.photoURL(ref), let img = UIImage(contentsOfFile: u.path) {
                 Image(uiImage: img).resizable().scaledToFill()
             } else if ref.hasPrefix("https://"), let u = URL(string: ref) {
-                if Self.isTrusted(u) || allowed {
+                if Self.isTrusted(u) || allowedRef == ref {
                     AsyncImage(url: u) { phase in
                         if let img = phase.image { img.resizable().scaledToFill() } else { placeholder }
                     }
                 } else {
                     ZStack {
                         placeholder
-                        Button { allowed = true } label: {
+                        Button { allowedRef = ref } label: {
                             Label("تحميل الصورة من \(u.host ?? "")", systemImage: "arrow.down.circle").font(Theme.font(11))
                         }.buttonStyle(.bordered).padding(6)
                     }

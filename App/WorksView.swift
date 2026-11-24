@@ -12,11 +12,11 @@ struct WorksView: View {
         var id: String { rawValue }
     }
 
-    var items: [WorkGroup] {
+    var items: [FavCore.WorkGroup] {
         let q = norm(query)
         let now = Date()
         var l = model.works.filter { g in
-            if !q.isEmpty && !(norm(g.t).contains(q) || norm(g.s).contains(q) || g.who.contains { norm($0.name).contains(q) }) { return false }
+            if !q.isEmpty && !Self.matches(g, q) { return false }
             switch tab {
             case .latest: return !g.isUpcoming(now: now)
             case .queue: return g.q && !g.seen
@@ -32,6 +32,11 @@ struct WorksView: View {
         default: l.sort { $0.date > $1.date }
         }
         return l
+    }
+
+    static func matches(_ g: FavCore.WorkGroup, _ q: String) -> Bool {
+        if norm(g.t).contains(q) || norm(g.s).contains(q) { return true }
+        return g.who.contains(where: { norm($0.name).contains(q) })
     }
 
     var body: some View {
@@ -52,13 +57,18 @@ struct WorksView: View {
 }
 
 struct WorkRow: View {
-    let g: WorkGroup
+    let g: FavCore.WorkGroup
+    var meta: String {
+        var parts: [String] = [g.who.prefix(2).map { $0.name }.joined(separator: "، "), g.s]
+        if !g.date.isEmpty { parts.append(String(g.date.prefix(4))) }
+        if g.du > 0 { parts.append("\(g.du) د") }
+        return parts.filter { !$0.isEmpty }.joined(separator: " · ")
+    }
     var body: some View {
         HStack(spacing: 12) {
             VStack(alignment: .leading, spacing: 3) {
                 Text(g.t).font(Theme.font(15, .semibold)).lineLimit(2)
-                Text([g.who.prefix(2).map(\.name).joined(separator: "، "), g.s, g.date.isEmpty ? "" : String(g.date.prefix(4)), g.du > 0 ? "\(g.du) د" : ""]
-                        .filter { !$0.isEmpty }.joined(separator: " · "))
+                Text(meta)
                     .font(Theme.font(12)).foregroundStyle(Theme.muted).lineLimit(1)
             }
             Spacer()

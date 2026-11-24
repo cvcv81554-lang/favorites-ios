@@ -63,7 +63,7 @@ struct PerformerView: View {
                     }
                     if !p.notes.isEmpty { Card { Text(p.notes).font(Theme.font(14)) } }
 
-                    let ws = model.works.filter { g in g.who.contains { $0.id == p.id } }.sorted { $0.date > $1.date }
+                    let ws = herWorks(p.id)
                     if !ws.isEmpty {
                         Text("أعمالها (\(ws.count))").font(Theme.font(17, .bold)).padding(.top, 6)
                         ForEach(ws) { WorkRow(g: $0) }
@@ -77,6 +77,11 @@ struct PerformerView: View {
         } else {
             EmptyStateView(icon: "person.slash", title: "غير موجودة", message: "")
         }
+    }
+
+    func herWorks(_ id: String) -> [FavCore.WorkGroup] {
+        let mine: [FavCore.WorkGroup] = model.works.filter { g in g.who.contains(where: { $0.id == id }) }
+        return mine.sorted { $0.date > $1.date }
     }
 
     @ViewBuilder func info(_ k: String, _ v: String) -> some View {
