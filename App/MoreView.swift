@@ -1,31 +1,142 @@
 import SwiftUI
 import UniformTypeIdentifiers
+import UserNotifications
 import FavCore
 
 struct MoreView: View {
     @Environment(AppModel.self) private var model
     var body: some View {
         List {
+            Section("الأقسام") {
+                NavigationLink(value: Route.intelligence) { Label("ذكاء المفضلة", systemImage: "brain.head.profile") }
+                NavigationLink(value: Route.reels) { Label("مقاطع", systemImage: "play.rectangle.on.rectangle") }
+                NavigationLink(value: Route.find) { Label("بحث شامل وباللغة الطبيعية", systemImage: "magnifyingglass") }
+                NavigationLink(value: Route.journal) { Label("يومياتي", systemImage: "book") }
+                NavigationLink(value: Route.stats) { Label("الإحصائيات وملخص السنة", systemImage: "chart.bar") }
+                NavigationLink(value: Route.tools) { Label("الأدوات", systemImage: "wrench.and.screwdriver") }
+                NavigationLink(value: Route.faces) { Label("ابحث بصورة (الوجه)", systemImage: "face.smiling") }
+                NavigationLink(value: Route.stash) { Label("مكتبة Stash", systemImage: "server.rack") }
+                NavigationLink(value: Route.missing(nil)) { Label("الأعمال الناقصة", systemImage: "rectangle.badge.xmark") }
+                NavigationLink(value: Route.network) { Label("الشبكة والمقاطع", systemImage: "network") }
+            }
             Section("بياناتك") {
                 NavigationLink { ImportView() } label: { Label("استيراد نسخة احتياطية", systemImage: "square.and.arrow.down") }
                 NavigationLink { ExportView() } label: { Label("تصدير نسخة احتياطية", systemImage: "square.and.arrow.up") }
                 if model.store.hasRollbackPoint { NavigationLink { RollbackView() } label: { Label("التراجع عن آخر استيراد", systemImage: "arrow.uturn.backward") } }
+                backupReminder
             }
+            Section("المصادر") { NavigationLink { KeysView() } label: { Label("مفاتيح ThePornDB وStashDB", systemImage: "key") } }
             Section("الخصوصية والأمان") {
-                row("بوابة +18", "أي سجل تاريخه يقول أقل من 18 أو تاريخه غير صالح يُرفض في الحفظ والاستيراد والعرض.")
+                NavigationLink { PrivacySettingsView() } label: { Label("القفل والإخفاء", systemImage: "lock") }
+                NavigationLink { NotificationsView() } label: { Label("التنبيهات", systemImage: "bell") }
+                row("بوابة +18", "أي سجل تاريخه يقول أقل من 18 أو تاريخه غير صالح يُرفض في الحفظ والاستيراد والعرض والبحث.")
                 row("بياناتك على جهازك", "لا حسابات ولا خوادم. القاعدة والصور داخل التطبيق وخارج نسخ iCloud.")
             }
             Section("عن التطبيق") {
-                row("المفضلة — النسخة الأصلية للآيفون", "إعادة بناء كاملة بـ Swift. الأقسام تُنقل تباعًا من التطبيق السابق، والسابق يبقى صالحًا حتى تتحقق من النقل.")
-                row("الإصدار", Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "")
+                row("المفضلة — النسخة الأصلية للآيفون", "Swift + SwiftUI. التطبيق السابق يبقى صالحًا حتى تتحقق من النقل.")
+                row("الإصدار", version)
             }
         }
         .scrollContentBackground(.hidden)
         .background(Theme.bg)
         .navigationTitle("المزيد")
     }
+    var version: String {
+        let v = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""
+        let b = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? ""
+        return "\(v) (\(b))"
+    }
+    @ViewBuilder var backupReminder: some View {
+        let last = model.store.kv("last_backup")?.number ?? 0
+        let days = last == 0 ? -1 : Int((Date().timeIntervalSince1970 - last) / 86400)
+        if days < 0 || days >= 14 {
+            Text(days < 0 ? "لم تصدّر نسخة احتياطية بعد — بياناتك على هذا الجهاز فقط. صدّر نسخة مشفّرة واحفظها في «الملفات»." : "آخر نسخة احتياطية قبل \(days) يومًا — صدّر نسخة جديدة.")
+                .font(Theme.font(12.5)).foregroundStyle(Theme.gold)
+        }
+    }
     func row(_ t: String, _ s: String) -> some View {
         VStack(alignment: .leading, spacing: 3) { Text(t).font(Theme.font(15, .semibold)); Text(s).font(Theme.font(12.5)).foregroundStyle(Theme.muted) }
+    }
+}
+
+/// مفاتيح API في سلسلة مفاتيح الجهاز (Keychain) — لا تُصدَّر ولا تُرسل إلا للمصدر نفسه.
+struct KeysView: View {
+    @State private var tpdb = Keychain.get(APIKeyName.tpdb.rawValue)
+    @State private var stash = Keychain.get(APIKeyName.stash.rawValue)
+    @State private var msg: [String: String] = [:]
+    var body: some View {
+        List {
+            Section("ThePornDB") {
+                SecureField("API Token", text: $tpdb).textInputAutocapitalization(.never).autocorrectionDisabled()
+                Button("حفظ واختبار") { Keychain.set(APIKeyName.tpdb.rawValue, tpdb.trimmingCharacters(in: .whitespacesAndNewlines)); Task { await test("t") } }
+                if let m = msg["t"] { Text(m).font(Theme.font(12.5)).foregroundStyle(m.hasPrefix("✓") ? Theme.ok : Theme.rose) }
+                Text("من theporndb.net ← حسابك ← API Tokens.").font(Theme.font(11.5)).foregroundStyle(Theme.muted)
+            }
+            Section("StashDB") {
+                SecureField("API Key", text: $stash).textInputAutocapitalization(.never).autocorrectionDisabled()
+                Button("حفظ واختبار") { Keychain.set(APIKeyName.stash.rawValue, stash.trimmingCharacters(in: .whitespacesAndNewlines)); Task { await test("s") } }
+                if let m = msg["s"] { Text(m).font(Theme.font(12.5)).foregroundStyle(m.hasPrefix("✓") ? Theme.ok : Theme.rose) }
+                Text("من stashdb.org ← حسابك ← API Key.").font(Theme.font(11.5)).foregroundStyle(Theme.muted)
+            }
+        }.navigationTitle("المفاتيح")
+    }
+    @MainActor func test(_ w: String) async {
+        msg[w] = "اختبار…"
+        do {
+            if w == "t" { try await TPDB.test(key: Keychain.get(APIKeyName.tpdb.rawValue)) } else { try await StashDB.test(key: Keychain.get(APIKeyName.stash.rawValue)) }
+            msg[w] = "✓ يعمل"
+        } catch { msg[w] = error.localizedDescription }
+    }
+}
+
+struct PrivacySettingsView: View {
+    @Environment(AppModel.self) private var model
+    @State private var newPin = ""
+    @State private var setting = false
+    var body: some View {
+        @Bindable var pv = model.privacy
+        List {
+            Section("الرمز السري") {
+                if pv.hasPin {
+                    Text("الرمز مفعّل (\(pv.pinLength) أرقام)").foregroundStyle(Theme.ok)
+                    Button("تغيير الرمز") { setting = true }
+                    Button("إلغاء الرمز", role: .destructive) { Keychain.set("pin2", ""); pv.hasPin = false; pv.persist() }
+                    Toggle("فتح بـ Face ID", isOn: $pv.bio).onChange(of: pv.bio) { _, _ in pv.persist() }
+                    Picker("قفل تلقائي بعد", selection: $pv.autoLockMin) { Text("فورًا").tag(0); Text("دقيقة").tag(1); Text("5 دقائق").tag(5); Text("15 دقيقة").tag(15) }
+                        .onChange(of: pv.autoLockMin) { _, _ in pv.persist() }
+                } else { Button("تعيين رمز سري") { setting = true } }
+            }
+            Section("الإخفاء") {
+                Toggle("غطاء عند مبدّل التطبيقات", isOn: $pv.cover).onChange(of: pv.cover) { _, _ in pv.persist() }
+                Toggle("تمويه الصور", isOn: $pv.blur).onChange(of: pv.blur) { _, _ in pv.persist() }
+                Toggle("الويدجت بلا صور ولا أسماء", isOn: $pv.widgetPrivate).onChange(of: pv.widgetPrivate) { _, _ in pv.persist(); WidgetBridge.publish(model) }
+            }
+        }
+        .navigationTitle("القفل والإخفاء")
+        .alert("رمز جديد (4–8 أرقام)", isPresented: $setting) {
+            SecureField("الرمز", text: $newPin).keyboardType(.numberPad)
+            Button("حفظ") { let d = newPin.filter { $0.isNumber }; if (4...8).contains(d.count) { pv.setPin(d) }; newPin = "" }
+            Button("إلغاء", role: .cancel) { newPin = "" }
+        }
+    }
+}
+
+struct NotificationsView: View {
+    @Environment(AppModel.self) private var model
+    @State private var status = ""
+    var body: some View {
+        List {
+            Button("السماح بالتنبيهات") { Task { await allow() } }
+            if !status.isEmpty { Text(status).foregroundStyle(Theme.muted) }
+            Toggle("تذكير قبل إصدار أعمال مفضلاتك بيوم", isOn: Binding(get: { model.pref("notify_release")?.bool ?? true }, set: { model.setPref("notify_release", .bool($0)) }))
+            Toggle("فحص الأعمال الجديدة في الخلفية", isOn: Binding(get: { model.pref("notify_new")?.bool ?? true }, set: { model.setPref("notify_new", .bool($0)) }))
+            Button("جدولة تذكيرات الإصدارات الآن") { Task { await Background.scheduleReleaseReminders(model.works); status = "✓ جُدولت" } }
+            Text("iOS يقرر توقيت الفحص في الخلفية؛ قد يتأخر أو لا يحدث إن لم تفتح التطبيق كثيرًا.").font(Theme.font(11.5)).foregroundStyle(Theme.muted)
+        }.navigationTitle("التنبيهات")
+    }
+    @MainActor func allow() async {
+        let ok = (try? await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge])) ?? false
+        status = ok ? "✓ مسموح" : "مرفوض — فعّلها من إعدادات iOS"
     }
 }
 
@@ -191,7 +302,7 @@ struct ExportView: View {
                 let day = todayStr()
                 let url = FileManager.default.temporaryDirectory.appendingPathComponent(encrypted ? "favorites-backup-\(day).vkte" : "favorites-backup-\(day).json")
                 try Data(text.utf8).write(to: url, options: .atomic)
-                await MainActor.run { file = url; busy = false }
+                await MainActor.run { file = url; busy = false; try? store.setKV("last_backup", .double(Date().timeIntervalSince1970)) }
             } catch { await MainActor.run { self.error = error.localizedDescription; busy = false } }
         }
     }

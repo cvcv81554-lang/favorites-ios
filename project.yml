@@ -23,6 +23,7 @@ targets:
         MARKETING_VERSION: "3.0.0"
         CURRENT_PROJECT_VERSION: "1"
         GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_FILE: Support/Info.plist
         INFOPLIST_KEY_CFBundleDisplayName: "المفضلة"
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
         INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
