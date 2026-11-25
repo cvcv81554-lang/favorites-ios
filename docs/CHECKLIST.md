@@ -46,51 +46,56 @@ Status legend:
 | Migrating the Flutter app's kv keys (`reels_sig`, `taste`, `face_emb`…): they aren't in the backup file, so a separate export is needed | ⬜ |
 
 ## Stage 4: the sections (parity)
+> Build 3.0.9 (2026-11-25): every section below is written and **compiles** (🟦). Nothing has been tried on the simulator or on an iPhone yet.
+
 | Section | Status | Notes |
 |---|---|---|
-| Navigation: Home, Library, Works, Discover, Studio, More | 🟦 | Discover and Studio say clearly that they haven't been moved yet |
-| Home: «نجمة اليوم» + numbers | 🟦 | Shelves, year summary and «يومياتي» not yet |
-| Library: search, sorting, favourites, lists | 🟦 | Advanced filters and multi-select not yet |
-| Performer page: photos, information, criteria, body details, works | 🟦 | Editing, «لماذا تحبها؟», «مسيرتها», linking: not yet |
-| Add/edit performer form | ⬜ | |
-| Works: tabs (latest / to watch / upcoming / watched / top rated), search | 🟦 | Work sheet, «لك», «يومياتي», by performer, studios, «سهرة»: not yet |
-| Discover + taste analysis | ⬜ | |
-| Studio | ⬜ | |
-| Clips (reels) + network screen | ⬜ | |
-| Stash library + missing works | ⬜ | |
-| «يومياتي» + statistics + year summary | ⬜ | |
-| Tools (duels, tiers, wish list, achievements, mood, completeness, rating session, on this day) | ⬜ | |
-| Unified search + natural language | ⬜ | |
-| Face recognition (on device) | ⬜ | |
-| Privacy: lock/Face ID, blur, screen cover | ⬜ | |
-| Notifications + background tasks | ⬜ | |
-| Widget (WidgetKit) | ⬜ | |
-| Sources: ThePornDB / StashDB / user's Stash server (URLSession) | ⬜ | |
+| Navigation: Home, Library, Works, Discover, Studio, More | 🟦 | |
+| Home: «نجمة اليوم», numbers, shelves, insight card, upcoming | 🟦 | |
+| Library: search, sorting, smart filters, lists, multi-select | 🟦 | |
+| Performer page: photos, rating + prediction, criteria, «لماذا تحبها؟», «مسيرتها», related, accounts, works | 🟦 | |
+| Add/edit performer form + linking from the sources | 🟦 | |
+| Works: «لك», by performer, studios, «يومياتي», work sheet, «سهرة» | 🟦 | |
+| Discover + taste analysis + simulator + taste map | 🟦 | |
+| Studio (fetch photos, swipe sorting, albums, visual dedupe) | 🟦 | |
+| Clips (AVPlayer feed, gestures, learning, quality, Stash markers, embeds) + network screen | 🟦 | |
+| Stash library + missing works + full player (VTT, resume, play count) | 🟦 | |
+| «يومياتي» + statistics + year summary | 🟦 | |
+| Tools (duels, tiers, rating session, achievements, mood, completeness, on this day, wish list, work lists, smart lists, random) | 🟦 | |
+| Unified search + natural language (+ Apple's on-device model on iOS 26 when available) | 🟦 | |
+| Face recognition (Vision + AuraFace Core ML, pinned + SHA-256) | 🟦 | Model download (130 MB) not tried on a device |
+| Privacy: PIN in Keychain (lockout survives restarts, fail-closed), Face ID, blur, screen cover | 🟦 | |
+| Notifications + background tasks (BGTaskScheduler) | 🟦 | iOS decides when they run |
+| Widget (WidgetKit, app group, ad-hoc entitlement) | 🟦 | Depends on AltStore keeping the app group |
+| Sources: ThePornDB / StashDB / user's Stash server (URLSession) | 🟦 | Logic unit-tested in FavCore; live network not tried from the app |
 
 ## Stage 6: Favorites Intelligence Engine (new)
+Logic in `FavCore/Intelligence.swift` is unit-tested (🟩); its screen («ذكاء المفضلة») compiles (🟦).
+
 | Item | Status |
 |---|---|
-| Taste DNA (combined attributes and interactions) | ⬜ |
-| Advanced «لماذا تحبها؟» with evidence | ⬜ |
-| Taste archetypes (clusters) | ⬜ |
-| Preference shift detector | ⬜ |
-| Rating predictor + feedback loop | ⬜ |
-| Proactive discovery | ⬜ |
-| "What if?" simulator | ⬜ |
-| Rating confidence | ⬜ |
-| Hidden patterns + anomalies | ⬜ |
-| Personal insights | ⬜ |
-| Active learning (smart questions) | ⬜ |
-| Preference memory (inspect / correct / reset) | ⬜ |
-| Recommendation paths (safe / new territory / unexpected / revisit / high confidence) | ⬜ |
-| Knowledge graph | ⬜ |
-| Personal AI analyst (Apple's on-device model + local queries) | ⬜ |
-| Library health / smart cleanup / data detective / hall of fame / saved filters / smart lists | ⬜ |
+| Taste DNA (combined attributes and interactions) | 🟩 logic · 🟦 UI |
+| Advanced «لماذا تحبها؟» with evidence | 🟦 |
+| Taste archetypes (clusters, rename/dismiss) | 🟩 · 🟦 |
+| Preference shift detector (30/90/180/365) | 🟩 · 🟦 |
+| Rating predictor + feedback loop + accuracy metrics | 🟩 · 🟦 |
+| Proactive discovery (background) | 🟦 |
+| "What if?" simulator | 🟦 |
+| Rating confidence | 🟩 · 🟦 |
+| Hidden patterns + anomalies | 🟩 · 🟦 |
+| Personal insights | 🟩 · 🟦 |
+| Active learning (smart questions) | 🟩 · 🟦 |
+| Preference memory (inspect / confirm / reject / reset) | 🟩 · 🟦 |
+| Recommendation paths (safe / new territory / unexpected / revisit / high confidence) | 🟩 · 🟦 |
+| Knowledge graph | 🟩 · 🟦 |
+| Personal AI analyst (local queries + Apple's on-device model fallback) | 🟩 · 🟦 |
+| Library health / cleanup / data detective / hidden gems / hall of fame / smart lists | 🟩 · 🟦 |
+| Learning controls (pause, exclude records, reset) | 🟦 |
 
 ## Building and testing
 | Item | Status |
 |---|---|
-| GitHub Actions: FavCore tests on macOS | 🟦 |
-| GitHub Actions: build the app + unsigned IPA + `latest` release | 🟦 |
+| GitHub Actions: FavCore tests on macOS | 🟩 |
+| GitHub Actions: build the app + widget + IPA + `latest` release | 🟩 (3.0.9) |
 | Simulator tests (XCUITest) | ⬜ |
 | Install on a real iPhone via AltStore | ⬜ (needs the user's trial) |
