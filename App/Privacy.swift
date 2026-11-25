@@ -19,7 +19,8 @@ final class Privacy {
     var showCover = false
     private var leftAt: Date?
     private weak var store: Store?
-    private var fails = 0, lockedUntil: Date?
+    private var fails = 0
+    private var lockedUntil: Date?
 
     func load(_ s: Store) {
         store = s
@@ -169,7 +170,8 @@ enum Background {
         let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0].appendingPathComponent("Favorites", isDirectory: true)
         guard let store = try? Store(directory: base) else { return 0 }
         Net.shared.keys = { Keychain.get($0.rawValue) }
-        var added = 0, changed: [Performer] = []
+        var added = 0
+        var changed: [Performer] = []
         for p in store.loadAll().filter({ $0.fav && !$0.isMinor }).prefix(12) {
             var incoming: [JSONObject] = []
             if let s = p.stashIds.first, let w = try? await StashDB.scenes(s, maxPages: 1) { incoming += w }

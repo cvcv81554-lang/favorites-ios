@@ -8,11 +8,19 @@ struct EditPerformerView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.dismiss) private var dismiss
     let existing: Performer?
-    @State private var name = "", aliases = "", country = "", birth = "", notes = "", tags = "", worksText = ""
+    @State private var name = ""
+    @State private var aliases = ""
+    @State private var country = ""
+    @State private var birth = ""
+    @State private var notes = ""
+    @State private var tags = ""
+    @State private var worksText = ""
     @State private var rating = 0.0
     @State private var fav = false
-    @State private var useCriteria = false, useBody = false
-    @State private var crit: [String: Double] = [:], bodyMap: [String: Double] = [:]
+    @State private var useCriteria = false
+    @State private var useBody = false
+    @State private var crit: [String: Double] = [:]
+    @State private var bodyMap: [String: Double] = [:]
     @State private var accounts: [(String, String)] = []
     @State private var lists = Set<String>()
     @State private var adult = false
@@ -101,7 +109,8 @@ struct EditPerformerView: View {
             let uri = "data:image/jpeg;base64," + d.base64EncodedString()
             if let ref = model.store.storeImage(uri, id: id, index: Int(Date().timeIntervalSince1970) % 100000 + i) { photos.append(ref) }
         }
-        var rat = rating, cr: [String: Double] = [:]
+        var rat = rating
+        var cr: [String: Double] = [:]
         if useCriteria { let r = applyRatings(criteria: crit, body: useBody ? bodyMap : [:]); cr = r.criteria; rat = r.rating }
         var ch: JSONObject = ["id": .string(id), "name": .string(n), "aliases": .string(aliases), "country": .string(country), "birth": .string(b), "notes": .string(notes),
                               "fav": .bool(fav), "rating": .double(rat), "tags": .array(tags.components(separatedBy: CharacterSet(charactersIn: ",،")).map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }.map { .string($0) }),

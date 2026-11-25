@@ -41,7 +41,9 @@ struct FlowLayout: Layout {
         return CGSize(width: w, height: y + row)
     }
     func placeSubviews(in b: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
-        var x = b.minX, y = b.minY, row: CGFloat = 0
+        var x = b.minX
+        var y = b.minY
+        var row: CGFloat = 0
         for s in subviews { let z = s.sizeThatFits(.unspecified); if x + z.width > b.maxX { x = b.minX; y += row + spacing; row = 0 }; s.place(at: CGPoint(x: x, y: y), proposal: .unspecified); x += z.width + spacing; row = max(row, z.height) }
     }
 }

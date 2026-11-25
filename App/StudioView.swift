@@ -5,7 +5,12 @@ import FavCore
 /// قاعدة مستقلة (kv: studio) — لا تدخل النسخ الاحتياطية.
 struct StudioImg: Identifiable, Hashable {
     let id: String, url: String, pid: String, src: String, kind: String
-    var year: Int?, like = false, hide = false, seen = false, found: Double, dh: UInt64? = nil
+    var year: Int?
+    var like = false
+    var hide = false
+    var seen = false
+    var found: Double
+    var dh: UInt64? = nil
     var json: JSONValue {
         var o: JSONObject = ["url": .string(url), "pid": .string(pid), "src": .string(src), "kind": .string(kind), "like": .bool(like), "hide": .bool(hide), "seen": .bool(seen), "found": .double(found)]
         if let year { o["year"] = .int(Int64(year)) }; if let dh { o["dh"] = .string(String(dh, radix: 16)) }
@@ -50,7 +55,8 @@ final class StudioState {
     /// إزالة المكرر: بصمة مرئية (dHash 64 بت) لكل صورة؛ المتطابقة لنفس الممثلة (فرق ≤ 4) تُخفى ويبقى الأوضح.
     @MainActor func dedupe(_ m: AppModel) async {
         running = true; defer { running = false; save(m.store) }
-        var n = 0, hidden = 0
+        var n = 0
+        var hidden = 0
         for k in Array(imgs.keys) {
             guard var x = imgs[k], x.dh == nil, !x.hide else { continue }
             n += 1; if n % 10 == 0 { msg = "بصمات الصور \(n)…" }
@@ -75,7 +81,8 @@ func dHash(_ img: UIImage) -> UInt64? {
     ctx.draw(cg, in: CGRect(x: 0, y: 0, width: w, height: h))
     guard let data = ctx.data else { return nil }
     let px = data.bindMemory(to: UInt8.self, capacity: w * h)
-    var v: UInt64 = 0, bit: UInt64 = 0
+    var v: UInt64 = 0
+    var bit: UInt64 = 0
     for y in 0..<h { for x in 0..<(w - 1) { if px[y * w + x] > px[y * w + x + 1] { v |= 1 << bit }; bit += 1 } }
     return v
 }
@@ -113,17 +120,25 @@ struct StudioView: View {
         .overlay { if st.imgs.isEmpty && !st.running { EmptyStateView(icon: "photo.stack", title: "الاستديو فارغ", message: "اضغط ⋯ ← «البحث عن صور جديدة» لجلب صور مفضلاتك الرسمية من المصادر.") } }
     }
 
+    @ViewBuilder func cell(_ x: StudioImg) -> some View {
+        let photo = PhotoView(ref: x.url).frame(height: 160).frame(maxWidth: .infinity).clipped()
+        photo
+            .overlay(alignment: .bottomTrailing) { if x.like { Image(systemName: "heart.fill").foregroundStyle(Theme.rose).padding(6) } }
+            .contextMenu { cellMenu(x) }
+    }
+    @ViewBuilder func cellMenu(_ x: StudioImg) -> some View {
+        Button(x.like ? "إلغاء الإعجاب" : "إعجاب") { toggleLike(x.id) }
+        Button("إضافة لصورها") { addToPerformer(x) }
+        Button("إخفاء", role: .destructive) { hide(x.id) }
+    }
+    func toggleLike(_ id: String) { st.imgs[id]?.like.toggle(); st.save(model.store) }
+    func hide(_ id: String) { st.imgs[id]?.hide = true; st.save(model.store) }
+
     func grid(_ l: [StudioImg]) -> some View {
         ScrollView {
             LazyVGrid(columns: [GridItem(.flexible(), spacing: 4), GridItem(.flexible(), spacing: 4), GridItem(.flexible(), spacing: 4)], spacing: 4) {
                 ForEach(l.prefix(600)) { x in
-                    PhotoView(ref: x.url).frame(height: 160).frame(maxWidth: .infinity).clipped()
-                        .overlay(alignment: .bottomTrailing) { if x.like { Image(systemName: "heart.fill").foregroundStyle(Theme.rose).padding(6) } }
-                        .contextMenu {
-                            Button(x.like ? "إلغاء الإعجاب" : "إعجاب") { st.imgs[x.id]?.like.toggle(); st.save(model.store) }
-                            Button("إضافة لصورها") { addToPerformer(x) }
-                            Button("إخفاء", role: .destructive) { st.imgs[x.id]?.hide = true; st.save(model.store) }
-                        }
+                    cell(x)
                 }
             }.padding(.horizontal, 4)
         }

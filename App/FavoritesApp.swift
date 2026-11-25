@@ -117,7 +117,8 @@ final class AppModel {
     /// يجمع كل سجلاتها بكل أسمائها من StashDB وThePornDB: معلومات، أعمال، صور — بلا تكرار، وبوابة +18 أولًا.
     @MainActor func refreshFromSources(_ p: Performer) async -> String {
         busy = "جمع سجلاتها من المصدرين…"; defer { busy = nil }
-        var sIds = p.stashIds, tIds = p.pdbIds
+        var sIds = p.stashIds
+        var tIds = p.pdbIds
         if !p.birth.isEmpty || !sIds.isEmpty || !tIds.isEmpty {
             let c = Candidate(source: sIds.isEmpty ? "tpdb" : "stash", id: sIds.first ?? tIds.first ?? "", name: p.name, aliases: p.aliases, birth: p.birth, country: p.country)
             let all = await findAllRecords(c) { m in Task { @MainActor in self.busy = m } }

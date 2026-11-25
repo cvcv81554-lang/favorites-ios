@@ -7,7 +7,8 @@ final class DiscoverState {
     var pool: [RecCand] = []
     var candFeats: [String: Features] = [:]
     var feedback: [String: Double] = [:]
-    var hidden = Set<String>(), saved = Set<String>()
+    var hidden = Set<String>()
+    var saved = Set<String>()
     var at: Double = 0
     var msg = ""
     var loading = false

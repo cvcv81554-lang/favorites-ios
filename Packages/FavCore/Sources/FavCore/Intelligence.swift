@@ -406,7 +406,8 @@ public func learnedPreferences(dna: TasteDNA, archetypes arch: [Archetype], memo
 
 // MARK: Recommendation portfolio + simulator
 
-public struct Scored: Identifiable, Sendable { public let c: RecCand; public let score: Double; public let confidence: Double; public let why, diff: [String]; public var id: String { c.id } }
+public struct Scored: Identifiable, Sendable { public let c: RecCand; public let score: Double; public let confidence: Double; public let why, diff: [String]; public var id: String { c.id }
+    public init(c: RecCand, score: Double, confidence: Double, why: [String], diff: [String]) { self.c = c; self.score = score; self.confidence = confidence; self.why = why; self.diff = diff } }
 
 /// يقيّم مرشحات الاقتراح بذوقك (مع أوزان مؤقتة للمحاكاة دون حفظها).
 public func scoreCandidates(_ cands: [RecCand], feats: [String: Features], profile: TasteProfile, feedback: [String: Double] = [:], fieldWeights: [String: Double] = [:], rejected: Set<String> = []) -> [Scored] {

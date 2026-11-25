@@ -186,7 +186,8 @@ struct WorkListsManager: View {
 struct SmartListsView: View {
     @Environment(AppModel.self) private var model
     @State private var lists: [(String, String)] = []
-    @State private var name = "", rule = ""
+    @State private var name = ""
+    @State private var rule = ""
     var body: some View {
         List {
             Section("قائمة ذكية جديدة") {

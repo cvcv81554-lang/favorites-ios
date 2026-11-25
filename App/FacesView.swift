@@ -65,7 +65,9 @@ enum FaceEngine {
         let src = [eyes[0], eyes[1], nose, ml, mr], dst = template.map { CGPoint(x: $0.x, y: 112 - $0.y) }
         let n = CGFloat(src.count)
         let mx = src.map(\.x).reduce(0, +) / n, my = src.map(\.y).reduce(0, +) / n, mu = dst.map(\.x).reduce(0, +) / n, mv = dst.map(\.y).reduce(0, +) / n
-        var a1: CGFloat = 0, a2: CGFloat = 0, den: CGFloat = 0
+        var a1: CGFloat = 0
+        var a2: CGFloat = 0
+        var den: CGFloat = 0
         for i in 0..<src.count { let xc = src[i].x - mx, yc = src[i].y - my, uc = dst[i].x - mu, vc = dst[i].y - mv; a1 += xc * uc + yc * vc; a2 += xc * vc - yc * uc; den += xc * xc + yc * yc }
         guard den > 0 else { return nil }
         let a = a1 / den, b = a2 / den

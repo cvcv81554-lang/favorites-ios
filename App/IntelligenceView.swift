@@ -288,7 +288,8 @@ struct AnalystView: View {
 
 struct GraphView: View {
     @Environment(AppModel.self) private var model
-    @State private var a = "", b = ""
+    @State private var a = ""
+    @State private var b = ""
     var body: some View {
         let ps = model.performers.sorted { $0.name < $1.name }
         let kg = KnowledgeGraph(lib: model.performers, works: model.works, lists: model.lists)

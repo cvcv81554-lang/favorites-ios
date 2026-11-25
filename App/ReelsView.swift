@@ -5,8 +5,15 @@ import FavCore
 
 /// إعدادات «مقاطع» (kv: reels_cfg) — نفس مفاتيح التطبيق السابق.
 struct ReelsCfg {
-    var sound = true, hqOnly = true, server = true, auto = false, favTab = false, prefetch = true, night = true
-    var count = 100, gb = 3
+    var sound = true
+    var hqOnly = true
+    var server = true
+    var auto = false
+    var favTab = false
+    var prefetch = true
+    var night = true
+    var count = 100
+    var gb = 3
     var emb: [String] = ["ph", "rt", "ep"]
     init(_ j: JSONValue?) {
         sound = j?["snd"]?.bool ?? true; hqOnly = j?["hq"]?.bool ?? true; server = j?["srv"]?.bool ?? true; auto = j?["auto"]?.bool ?? false
@@ -392,7 +399,8 @@ struct FullVideoView: View {
     @State private var player: AVPlayer?
     @State private var cues: [VttCue] = []
     @State private var sprites: [String: UIImage] = [:]
-    @State private var pos: Double = 0, dur: Double = 0
+    @State private var pos: Double = 0
+    @State private var dur: Double = 0
     @State private var scrub: Double?
     @State private var began = Date()
     var body: some View {

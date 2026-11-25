@@ -5,7 +5,8 @@ import FavCore
 struct NetworkView: View {
     @Environment(AppModel.self) private var model
     @State private var cfg = ReelsCfg(nil)
-    @State private var url = "", key = ""
+    @State private var url = ""
+    @State private var key = ""
     @State private var stashMsg = ""
     @State private var srcStatus: [String: String] = [:]
     @State private var cache = (0, Int64(0))
@@ -101,7 +102,8 @@ struct StashLibraryView: View {
     @State private var mine = false
     @State private var performer: (String, String)?
     @State private var items: [(FavCore.WorkGroup, StashExtra)] = []
-    @State private var count = 0, page = 0
+    @State private var count = 0
+    @State private var page = 0
     @State private var perfs: [StashServer.ServerPerformer] = []
     @State private var resume: [(FavCore.WorkGroup, StashExtra)] = []
     @State private var msg = ""
