@@ -167,7 +167,7 @@ struct FaceAlbumView: View {
             if let d = await FaceEngine.photoData(model, ref), let e = FaceEngine.embed(d), e.1 == 1 { es[ref] = e.0 }
         }
         let c = FaceEngine.consensus(Array(es.values))
-        results = p.photos.map { ($0, c.flatMap { cc in es[$0].map { FaceEngine.cos($0, cc) } }) }
+        results = p.photos.map { ref in (ref, c.flatMap { cc in es[ref].map { e in FaceEngine.cos(e, cc) } }) }
     }
     func remove(_ ref: String) {
         guard let p = model.performer(performerId) else { return }

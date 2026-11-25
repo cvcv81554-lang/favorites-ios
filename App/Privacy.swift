@@ -9,7 +9,7 @@ import FavCore
 /// الخصوصية: قفل برمز (مُجزّأ بملح) أو Face ID، غطاء عند مغادرة التطبيق، تمويه الصور، والوضع الخاص للويدجت.
 @Observable
 final class Privacy {
-    var locked = false
+    var locked = true   // مقفل حتى تُحمَّل الإعدادات
     var hasPin = false
     var bio = true
     var cover = true
@@ -28,6 +28,10 @@ final class Privacy {
         widgetPrivate = p["wp"]?.bool ?? false; autoLockMin = p["al"]?.int ?? 0
         hasPin = !Keychain.get("pin2").isEmpty
         locked = hasPin
+        // عداد المحاولات الخاطئة ومهلة القفل محفوظان في Keychain: إغلاق التطبيق لا يصفّرهما
+        let f = Keychain.get("pin_fails").split(separator: ":").map(String.init)
+        fails = Int(f.first ?? "") ?? 0
+        if f.count > 1, let t = Double(f[1]), t > Date().timeIntervalSince1970 { lockedUntil = Date(timeIntervalSince1970: t) }
     }
     func persist() {
         try? store?.setKV("privacy", ["bio": .bool(bio), "cover": .bool(cover), "blur": .bool(blur), "wp": .bool(widgetPrivate || hasPin), "al": .int(Int64(autoLockMin))])
@@ -47,12 +51,14 @@ final class Privacy {
     func check(_ pin: String) -> Bool {
         if let u = lockedUntil, u > Date() { return false }
         let parts = Keychain.get("pin2").split(separator: ":").map(String.init)
-        guard parts.count >= 2 else { return true }
-        if Self.hash(pin, salt: parts[0]) == parts[1] { fails = 0; locked = false; return true }
+        guard parts.count >= 2 else { return false }   // رمز تالف ⇒ لا فتح
+        if Self.hash(pin, salt: parts[0]) == parts[1] { fails = 0; lockedUntil = nil; saveFails(); locked = false; return true }
         fails += 1
         if fails >= 5 { lockedUntil = Date().addingTimeInterval(Double(min(300, 30 * (fails - 4)))) }
+        saveFails()
         return false
     }
+    private func saveFails() { Keychain.set("pin_fails", "\(fails):\(lockedUntil?.timeIntervalSince1970 ?? 0)") }
     var waitSeconds: Int { max(0, Int((lockedUntil ?? .distantPast).timeIntervalSinceNow.rounded(.up))) }
 
     func biometric() {

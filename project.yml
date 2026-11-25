@@ -16,6 +16,8 @@ targets:
       - path: App
     dependencies:
       - package: FavCore
+      - target: FavoritesWidget
+        embed: true
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.favlib.favoritesnative
@@ -24,6 +26,7 @@ targets:
         CURRENT_PROJECT_VERSION: "1"
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_FILE: Support/Info.plist
+        CODE_SIGN_ENTITLEMENTS: Support/Favorites.entitlements
         INFOPLIST_KEY_CFBundleDisplayName: "المفضلة"
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
         INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
@@ -34,3 +37,21 @@ targets:
         ENABLE_PREVIEWS: NO
     scheme:
       testTargets: []
+  FavoritesWidget:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: Widget
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.favlib.favoritesnative.widget
+        PRODUCT_NAME: FavoritesWidget
+        MARKETING_VERSION: "3.0.0"
+        CURRENT_PROJECT_VERSION: "1"
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_FILE: Support/Widget-Info.plist
+        INFOPLIST_KEY_CFBundleDisplayName: "المفضلة"
+        CODE_SIGN_ENTITLEMENTS: Support/Favorites.entitlements
+        TARGETED_DEVICE_FAMILY: "1"
+        SWIFT_VERSION: "5.0"
+        SKIP_INSTALL: YES

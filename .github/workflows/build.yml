@@ -45,6 +45,10 @@ jobs:
         run: |
           mkdir -p Payload dist
           cp -R build/Build/Products/Release-iphoneos/Favorites.app Payload/
+          # توقيع مؤقت (ad-hoc) يضمّن صلاحية المجموعة المشتركة كي يعيد AltStore توقيعها ويعمل الويدجت
+          for x in Payload/Favorites.app/PlugIns/*.appex; do [ -d "$x" ] && codesign -f -s - --entitlements Support/Favorites.entitlements "$x"; done
+          codesign -f -s - --entitlements Support/Favorites.entitlements Payload/Favorites.app
+          codesign -d --entitlements - Payload/Favorites.app | head -20
           zip -qry dist/Favorites-native.ipa Payload
           ls -la dist
       - uses: actions/upload-artifact@v4
