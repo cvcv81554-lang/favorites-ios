@@ -144,10 +144,22 @@ struct StudioView: View {
         }
     }
 
+    func albumGroups(_ all: [StudioImg]) -> [(String, [StudioImg])] {
+        var g: [(String, [StudioImg])] = []
+        g.append(("صور شخصية", all.filter { x in x.kind == "portrait" }))
+        g.append(("ملصقات", all.filter { x in x.kind == "promo" }))
+        g.append(("لقطات مشاهد", all.filter { x in x.kind == "still" }))
+        g.append(("StashDB", all.filter { x in x.src.hasPrefix("stash") }))
+        g.append(("ThePornDB", all.filter { x in x.src.hasPrefix("tpdb") }))
+        g.append(("لم تُشاهد", all.filter { x in !x.seen }))
+        var byYear: [Int: [StudioImg]] = [:]
+        for x in all { if let y = x.year { byYear[y, default: []].append(x) } }
+        for y in byYear.keys.sorted(by: >) { g.append(("حقبة \(y)", byYear[y] ?? [])) }
+        return g
+    }
+
     func albums(_ all: [StudioImg]) -> some View {
-        let groups: [(String, [StudioImg])] = [("صور شخصية", all.filter { $0.kind == "portrait" }), ("ملصقات", all.filter { $0.kind == "promo" }), ("لقطات مشاهد", all.filter { $0.kind == "still" }),
-            ("StashDB", all.filter { $0.src.hasPrefix("stash") }), ("ThePornDB", all.filter { $0.src.hasPrefix("tpdb") }), ("لم تُشاهد", all.filter { !$0.seen })]
-            + Dictionary(grouping: all.filter { $0.year != nil }, by: { $0.year! }).sorted { $0.key > $1.key }.map { ("حقبة \($0.key)", $0.value) }
+        let groups = albumGroups(all)
         return List {
             Section("ألبومات ذكية وحقب") {
                 ForEach(groups.filter { !$0.1.isEmpty }, id: \.0) { g in NavigationLink { grid(g.1).navigationTitle(g.0) } label: { HStack { Text(g.0); Spacer(); Text("\(g.1.count)").foregroundStyle(Theme.muted) } } }
