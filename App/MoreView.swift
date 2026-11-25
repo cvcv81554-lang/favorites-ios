@@ -168,8 +168,8 @@ struct ImportView: View {
         }
         .scrollContentBackground(.hidden).background(Theme.bg)
         .navigationTitle("استيراد")
-        .fileImporter(isPresented: $picking, allowedContentTypes: [.json, .data, .item]) { result in
-            if case .success(let url) = result { load(url) }
+        .sheet(isPresented: $picking) {
+            DocumentPicker { url in picking = false; load(url) } onCancel: { picking = false }.ignoresSafeArea()
         }
     }
 
@@ -211,13 +211,22 @@ struct ImportView: View {
 
     func line(_ k: String, _ v: Int) -> some View { HStack { Text(k); Spacer(); Text("\(v)").foregroundStyle(Theme.gold) } }
 
+    /// القراءة خارج خيط الواجهة (ملفات النسخ مع الصور قد تكون مئات الميغابايت).
     func load(_ url: URL) {
-        error = nil
-        let access = url.startAccessingSecurityScopedResource()
-        defer { if access { url.stopAccessingSecurityScopedResource() } }
-        guard let text = try? String(contentsOf: url, encoding: .utf8) else { error = "تعذّرت قراءة الملف"; return }
-        if Backup.isEncrypted(text) { encryptedText = text; return }
-        run("قراءة الملف…") { try parse(text) }
+        error = nil; busy = "قراءة الملف \(url.lastPathComponent)…"
+        Task.detached {
+            let access = url.startAccessingSecurityScopedResource()
+            defer { if access { url.stopAccessingSecurityScopedResource() } }
+            let data: Data
+            do { data = try Data(contentsOf: url, options: .mappedIfSafe) }
+            catch { await MainActor.run { self.error = "تعذّرت قراءة الملف: \(error.localizedDescription)"; busy = nil }; return }
+            guard let text = String(data: data, encoding: .utf8) else {
+                await MainActor.run { self.error = "الملف ليس نسخة احتياطية من «المفضلة» (ليس نصًا UTF-8)"; busy = nil }; return
+            }
+            if Backup.isEncrypted(text) { await MainActor.run { encryptedText = text; busy = nil }; return }
+            do { let p = try parse(text); await MainActor.run { plan = p; busy = nil } }
+            catch { await MainActor.run { self.error = "تعذّرت قراءة النسخة: \(error.localizedDescription)"; busy = nil } }
+        }
     }
 
     /// القراءة والتخطيط خارج خيط الواجهة.
@@ -305,5 +314,25 @@ struct ExportView: View {
                 await MainActor.run { file = url; busy = false; try? store.setKV("last_backup", .double(Date().timeIntervalSince1970)) }
             } catch { await MainActor.run { self.error = error.localizedDescription; busy = false } }
         }
+    }
+}
+
+/// منتقي الملفات من Apple: ينسخ الملف داخل التطبيق (asCopy) فيعمل مع «الملفات» وiCloud Drive وأي امتداد (.json / .vkte).
+struct DocumentPicker: UIViewControllerRepresentable {
+    let onPick: (URL) -> Void
+    let onCancel: () -> Void
+    func makeCoordinator() -> Coord { Coord(onPick: onPick, onCancel: onCancel) }
+    func makeUIViewController(context: Context) -> UIDocumentPickerViewController {
+        let vc = UIDocumentPickerViewController(forOpeningContentTypes: [.item], asCopy: true)
+        vc.allowsMultipleSelection = false
+        vc.delegate = context.coordinator
+        return vc
+    }
+    func updateUIViewController(_ vc: UIDocumentPickerViewController, context: Context) {}
+    final class Coord: NSObject, UIDocumentPickerDelegate {
+        let onPick: (URL) -> Void; let onCancel: () -> Void
+        init(onPick: @escaping (URL) -> Void, onCancel: @escaping () -> Void) { self.onPick = onPick; self.onCancel = onCancel }
+        func documentPicker(_ c: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) { if let u = urls.first { onPick(u) } else { onCancel() } }
+        func documentPickerWasCancelled(_ c: UIDocumentPickerViewController) { onCancel() }
     }
 }
